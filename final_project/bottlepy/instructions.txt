@@ -1,0 +1,10 @@
+- run: python scrape_ncaa_data.py
+- pip install bottle
+- pip install bottle_sqlite
+- python app.py
+- got to: http://localhost:8080/main
+- if anything fails, there are screenshots of the app in the PDF doc in this directory
+
+#install(SQLitePlugin(dbfile='./da602.sqlite'))
+
+- notes: 2016 picks from http://www.businessinsider.com/most-popular-final-four-picks-2016-3

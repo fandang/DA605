@@ -1,0 +1,12 @@
+DB info:
+
+host_url=fandang77.mysql.pythonanywhere-services.com
+db=fandang77$DA602
+user=fandang77
+pw=db_60267
+
+Instructions:
+- install web2py
+- copy the da602 directory to web2py\applications directory
+- start web2py (web2py/web2py.exe)
+- go to http://127.0.0.1:8000/
