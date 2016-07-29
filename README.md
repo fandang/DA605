@@ -1,1 +1,2 @@
-# DA605
+# DATA605
+Fundamentals of Computational Mathematics
