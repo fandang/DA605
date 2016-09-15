@@ -1,0 +1,100 @@
+---
+title: "IS 605 - Assignment 4"
+author: "Dan Fanelli"
+date: "February 24, 2016"
+output: pdf_document
+---
+
+## Problem Set 1: 
+
+__Given a 3 × 3 matrix A, write code in R to compute X = AAT and Y = ATA.__
+```{r}
+A <- matrix(c(-1,1,0,1,3,-2,5,0,1), ncol=3)
+X <- A %*% t(A)
+Y <- t(A) %*% A
+```
+
+__EIGEN: "Then, compute the eigenvalues and eigenvectors of X and Y using the built-in commans in R."__
+```{r}
+eigen(X)$vectors
+eigen(Y)$vectors
+eigen(X)$values
+eigen(Y)$values
+```
+
+__SVD: "Then, compute the left-singular, singular values, and right-singular vectors of A using the svd command"__
+```{r}
+svd_obj <- svd(A)
+svd_obj$u
+svd_obj$d
+svd_obj$v
+```
+
+__"Examine the two sets of singular vectors and show that they are indeed eigenvectors of X and Y"__
+```{r}
+# svd u and eigen x are related:
+svd_obj$u
+eigen(X)$vectors
+
+# col 1: negatives of each other (adding yields zero)
+round(svd_obj$u[,1] + eigen(X)$vectors[,1], digits = 4)
+# col 2: negatives of each other (adding yields zero)
+round(svd_obj$u[,2] + eigen(X)$vectors[,2], digits = 4)
+# col 3: equal to each other (subtractinging yields zero)
+round(svd_obj$u[,3] - eigen(X)$vectors[,3], digits = 4)
+
+# svd v and eigen y are related:
+svd_obj$v
+eigen(Y)$vectors
+
+# col 1: negatives of each other (adding yields zero)
+round(svd_obj$v[,1] + eigen(Y)$vectors[,1], digits = 4)
+# col 2: equal to each other (subtractinging yields zero)
+round(svd_obj$v[,2] - eigen(Y)$vectors[,2], digits = 4)
+# col 3: negatives of each other (adding yields zero)
+round(svd_obj$v[,3] + eigen(Y)$vectors[,3], digits = 4)
+
+```
+
+## Problem Set 2:
+
+__Write function to computer matrix inverse using co-factors:__
+
+```{r warning=FALSE}
+library(pracma)
+
+get_co_factor <- function(subM, r, c){
+  sign <- (-1)^(r+c)
+  det <- det(subM)
+  return (sign * det)
+}
+
+get_co_factor_matrix <- function(M){
+  cofactor_M <- M;
+  for(c in 1:col(M)){
+    for(r in 1:row(M)){
+      cofactor_M[r,c] <- get_co_factor(M,r,c)
+    }
+  }
+  return (cofactor_M)
+}
+
+myinverse <- function(A){
+  cofactor_M <- get_co_factor_matrix(A)
+  transpose_M <- t(cofactor_M)
+  return (transpose_M / det(A))
+}
+
+in1 <- matrix(c(4,3,3,2), nrow=2)
+out1 <- myinverse(in1)
+rref(in1 %*% out1)
+
+in2 <- matrix(c(-24,20,-5,18,-15,4,5,-4,1), nrow=3)
+out2 <- myinverse(in2)
+rref(in2 %*% out2)
+
+in3 <- matrix(c(2,14,7,46,5,24,3,19,7,63,5,4,31,2,35,26,17,8,19,16,75), nrow=5)
+out3 <- myinverse(in3)
+rref(in3 %*% out3)
+```
+

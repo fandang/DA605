@@ -1,0 +1,177 @@
+---
+title: "DA 605 - Assignment 11"
+author: "Dan Fanelli"
+output: pdf_document
+---
+
+## LINEAR REGRESSION IN R
+
+* Your submission should include the final linear fits, and their corresponding significance levels. 
+* In addition, you should clearly state what you concluded from looking at the fit and their significance levels.
+
+```{r message=FALSE, warning=FALSE}
+library(knitr)
+library(ggplot2)
+library(rpart)
+```
+
+*****
+### Age and Max HR:
+*****
+
+__We hear that MaxHR = 220 - Age__
+
+```{r message=FALSE, warning=FALSE}
+age <- c(18,23,25,35,65,54,34,56,72,19,23,42,18,39,37)
+maxHR <- c(202,186,187,180,156,169,174,172,153,199,193,174,198,183,178)
+hr_age_df <- data.frame(age, maxHR)
+summary(hr_age_df)
+kable(hr_age_df, align = "l")
+```
+
+Using R's lm function:
+
+1. Perform regression analysis
+
+```{r message=FALSE, warning=FALSE}
+hr_age_model <- lm(maxHR ~ age)
+summary(hr_age_model)
+```
+
+2. Measure the signicance of the independent variables
+
+```{r message=FALSE, warning=FALSE}
+cor(age, maxHR)
+```
+
+___The independent variable 'age' has a *** next to it, so its significance level is basically 0.___
+
+3. What is the resulting equation?
+
+```{r message=FALSE, warning=FALSE}
+HR = 210.04846 + (-0.79773)*age
+```
+
+4. Is the effect of Age on Max HR significant?
+
+___Its basically 0, so not significant.___
+
+5. What is the signicance level? 
+
+___The significant level is *** which is basically zero.___
+
+6. Please also plot the fitted relationship between Max HR and Age.
+
+```{r message=FALSE, warning=FALSE}
+ggplot(data = hr_age_df, aes(x = age, y = maxHR)) + geom_smooth(method = "lm", se=FALSE, color="blue", formula = y ~ x) + geom_point() + geom_abline(intercept = 220, slope = -1)
+```
+
+*****
+### Auto Data:
+*****
+
+Using the Auto data set from Assignment 5 (also attached here) perform a Linear Regression analysis using mpg as the dependent variable and the other 4 (displacement, horsepower, weight, acceleration) as independent variables. 
+
+```{r message=FALSE, warning=FALSE}
+mpg_df <- read.table("auto-mpg.data", sep="")
+names(mpg_df) <- c("mpg", "cylinders", "displacement", "horsepower", "weight", "acceleration", "model_year", "origin", "car_name")
+
+mpg_df <- mpg_df[,c("mpg","displacement","horsepower","weight","acceleration")]
+mpg_df <- subset(mpg_df, displacement != '?' && horsepower != '?' && weight != '?' && acceleration != '?')
+
+# it was showing horsepower as categorical, so giving strange results
+mpg_df <- transform(mpg_df, horsepower = as.numeric(horsepower))
+
+kable(head(mpg_df, n=10), align = "l")
+
+```
+
+1. What is the final linear regression fit equation? 
+
+```{r message=FALSE, warning=FALSE}
+mpg_model <- lm(mpg ~ mpg_df$displacement + mpg_df$horsepower + mpg_df$weight + mpg_df$acceleration, data = mpg_df)
+
+summary(mpg_model)
+
+```
+
+___So the final linear regression fit equation is:___
+
+mpg = 40 - (displacement * -0.0106291) + (horsepower * 0.0047774) + (weight * -0.0061405) + (acceleration * 0.1722165)
+
+2. Which of the 4 independent variables have a significant impact on mpg? 
+
+Based on the significance codes, only weight seems to have zero impact on mpg.
+
+3. What are their corresponding significance levels? 
+
+* displacement: 0.1041
+* horsepower: 0.5633
+* weight: (zero...)
+* acceleration: 0.0785
+
+4. What are the standard errors on each of the coeficients? 
+
+* displacement: 1.9966258
+* horsepower: 0.0065254
+* weight: 0.0007449
+* acceleration: 0.0976340
+
+Please perform this experiment in two ways. 
+
+1. First take any random 40 data points from the entire auto data sample and perform the linear regression fit and measure the 95% confidence intervals. 
+
+```{r message=FALSE, warning=FALSE}
+mpg_df_40_sample <- mpg_df[sample(nrow(mpg_df), 40), ]
+mpg_df_40_sample_fit <- lm(mpg ~ displacement + horsepower + weight + acceleration, data=mpg_df_40_sample)
+summary(mpg_df_40_sample_fit)
+confint(mpg_df_40_sample_fit, level=0.95)
+plot(mpg_df_40_sample_fit)
+cor(mpg_df_40_sample$displacement, mpg_df_40_sample$mpg)
+cor(mpg_df_40_sample$horsepower, mpg_df_40_sample$mpg)
+cor(mpg_df_40_sample$weight, mpg_df_40_sample$mpg)
+cor(mpg_df_40_sample$acceleration, mpg_df_40_sample$mpg)
+```
+
+2. Then, take the entire data set (all 392 points) and perform linear regression and measure the 95% confidence intervals. 
+
+```{r message=FALSE, warning=FALSE}
+mpg_df_all <- mpg_df
+mpg_df_all_fit <- lm(mpg ~ displacement + horsepower + weight + acceleration, data=mpg_df_all)
+summary(mpg_df_all_fit)
+confint(mpg_df_all_fit, level=0.95)
+plot(mpg_df_all_fit)
+cor(mpg_df_all$displacement, mpg_df_all$mpg)
+cor(mpg_df_all$horsepower, mpg_df_all$mpg)
+cor(mpg_df_all$weight, mpg_df_all$mpg)
+cor(mpg_df_all$acceleration, mpg_df_all$mpg)
+```
+
+3. Please report the resulting fit equation, their significance values and confidence intervals for each of the two runs.
+
+(done, see above...)
+
+# Some Help Analysis / Debugging:
+
+from: http://www.statmethods.net/stats/regression.html
+
+```{r message=FALSE, warning=FALSE}
+# Other useful functions 
+coefficients(mpg_df_all_fit) # model coefficients
+confint(mpg_df_all_fit, level=0.95) # CIs for model parameters 
+#fitted(mpg_df_all_fit) # predicted values
+#residuals(mpg_df_all_fit) # residuals
+anova(mpg_df_all_fit) # anova table 
+vcov(mpg_df_all_fit) # covariance matrix for model parameters 
+#influence(mpg_df_all_fit) # regression diagnostics
+
+###########
+ggplot(data = mpg_df, aes(y = mpg, x = displacement)) +     geom_smooth(method = "lm", color="green", formula = y ~ x) + geom_point()
+
+ggplot(mpg_df, aes(y=mpg, x=horsepower)) + geom_smooth(method = "lm", color="blue", formula = y ~ x) + geom_point()
+
+ggplot(mpg_df, aes(y=mpg, x=weight)) + geom_smooth(method = "lm", color="orange", formula = y ~ x) + geom_point()
+
+ggplot(mpg_df, aes(y=mpg, x=acceleration)) + geom_smooth(method = "lm", color="red", formula = y ~ x) + geom_point()
+
+```

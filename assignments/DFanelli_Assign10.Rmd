@@ -1,0 +1,92 @@
+---
+title: "DA 605 - Assignment 10"
+author: "Dan Fanelli"
+output: pdf_document
+---
+
+
+```{r message=FALSE, warning=FALSE}
+library(igraph)
+```
+
+## Playing with PageRank
+
+You'll verify for yourself that PageRank works by performing calculations on a small universe of web pages.
+
+Let's use the 6 page universe that we had in the course notes. For this directed graph, perform the following calculations in R.
+
+#### Form the A matrix. Then, introduce decay and form the B matrix as we did in the course notes.
+
+```{r}
+
+A <- matrix(c(0,(1/2),(1/2),0,0,0,
+              0,0,1,0,0,0,
+              (1/4),(1/4),0,0,(1/4),(1/4),
+              0,0,0,0,(1/2),(1/2),
+              0,0,0,(1/2),0,(1/2),
+              0,0,(1/2),(1/2),0,0), nrow=6, ncol=6) 
+A
+
+damping_pct <- 0.15
+do_decay <- function(mtrx_in){
+  return ((1-damping_pct) * mtrx_in + (damping_pct / nrow(mtrx_in)))
+}
+
+B <- do_decay(A)
+B
+```
+
+#### Start with a uniform rank vector r and perform power iterations on B till convergence. That is, compute the solution r = Bn * r. Attempt this for a sufficiently large n so that r actually converges.
+
+```{r}
+vector_of_ones <- c(1,1,1,1,1,1) 
+uniform_rank_vector_r <- vector_of_ones / length(vector_of_ones)
+uniform_rank_vector_r
+
+power_iterate <- function(mtrx_in, rank_vector, iteration_number){
+  cat(sprintf("power_iterate: %s\n", iteration_number))
+  rank_vector <- mtrx_in %*% rank_vector
+  if(all(rank_vector == (mtrx_in %*% rank_vector))){
+    cat(sprintf("YOUR STABLE RANK IS: %s\n", rank_vector))
+    return (mtrx_in)
+  }else{
+    return (power_iterate(mtrx_in, (mtrx_in %*% rank_vector), (iteration_number+1)))
+  }
+}
+
+power_iterate(B, uniform_rank_vector_r, 0)
+```
+
+#### Compute the eigen-decomposition of B and verify that you indeed get an eigenvalue of 1 as the largest eigenvalue and that its corresponding eigenvector is the same vector that you obtained in the previous power iteration method. Further, this eigenvector has all positive entries and it sums to 1.
+
+```{r}
+
+get_unit_vector <- function(vec){
+  return (vec / sqrt(sum(vec^2)))  
+}
+
+eigen_vals <- Re(eigen(B)$values)
+# The eigen values are sorted from greatest to least, so: 
+# http://stackoverflow.com/questions/16616923/find-the-biggest-eigenvalue-in-r
+eigen_vals[1]
+
+eigen_vecs <- Re(eigen(B)$vectors[,1])
+eigen_vecs[1]
+
+rank_vector_from_printout <- c(0.0773588617577133,0.110236378004742,0.24639464356571,0.186353894445986,0.156559266897257,0.223096955328592)
+
+rank_vector_from_printout / eigen_vecs[1] * eigen_vecs[1]
+
+```
+
+#### Use the graph package in R and its page.rank method to compute the Page Rank of the graph as given in A. Note that you don't need to apply decay. The package starts with a connected graph and applies decay internally. Verify that you do get the same PageRank vector as the two approaches above
+
+```{r}
+# http://www.r-bloggers.com/going-viral-with-rs-igraph-package/
+G <- graph(c(1,2,2,3,3,2,1,3,3,1,3,6,6,3,3,5,5,6,6,4,4,6,5,4,4,5), directed = TRUE )
+plot(G)
+
+page.rank(G)
+```
+
+#### AND YES IT MATCHES!!!!

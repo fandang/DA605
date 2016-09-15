@@ -1,0 +1,108 @@
+---
+title: "IS 605 - Assignment 1"
+author: "Dan Fanelli"
+date: "February 5, 2016"
+output: html_document
+---
+
+## Problem Set 1:
+
+Setup u and v:
+
+```{r}
+u <- c(0.5, 0.5)
+v <- c(3,-4)
+```
+
+(1) Calculate the dot product u.v where u = [0.5; 0.5] and v = [3; −4]
+
+```{r}
+u.dot.v <- u %*% v
+u.dot.v
+```
+
+(2) What are the lengths of u and v? Please note that the mathematical notion of the
+length of a vector is not the same as a computer science definition.
+
+```{r}
+u.length <- length(u)
+u.length
+
+v.length <- length(v)
+v.length
+```
+
+(3) What is the linear combination: 3u − 2v?
+
+```{r}
+linear.combination <- (3 * u) - (2 * v)
+linear.combination
+```
+
+(4) What is the angle between u and v
+
+(help from: http://stackoverflow.com/questions/1897704/angle-between-two-vectors-in-r)
+
+```{r}
+angle.between.u.and.v <- acos( sum(u*v) / ( sqrt(sum(u * u)) * sqrt(sum(v * v)) ) )
+angle.between.u.and.v
+```
+
+## Problem Set 2:
+
+A bit of help from: http://stackoverflow.com/questions/16044377/how-to-do-gaussian-elimination-in-r-do-not-use-solve
+
+```{r}
+
+solveWithElimination <- function(matrixRow1, matrixRow2, matrixRow3, matrixSolutionVector){
+  A <- matrix(c(matrixRow1,matrixRow2,matrixRow3),byrow=T,nrow=3,ncol=3)
+  b <- matrix(matrixSolutionVector,nrow=3,ncol=1)
+  p <- nrow(A)
+  (U.pls <- cbind(A,b))
+  
+  U.pls[1,] <- U.pls[1,]/U.pls[1,1]
+  
+  i <- 2
+  while (i < p+1) {
+   j <- i
+   while (j < p+1) {
+    U.pls[j, ] <- U.pls[j, ] - U.pls[i-1, ] * U.pls[j, i-1]
+    j <- j+1
+   }
+   while (U.pls[i,i] == 0) {
+    U.pls <- rbind(U.pls[-i,],U.pls[i,])
+   }
+   U.pls[i,] <- U.pls[i,]/U.pls[i,i]
+   i <- i+1
+  }
+  for (i in p:2){
+   for (j in i:2-1) {
+    U.pls[j, ] <- U.pls[j, ] - U.pls[i, ] * U.pls[j, i]
+   }
+  }
+  U.pls
+}
+
+```
+
+Now invoke the function with values from stack overflow:
+
+```{r}
+matrixRow1 <- c(2,-5,4)
+matrixRow2 <- c(1,-2.5,1)
+matrixRow3 <- c(1,-4,6)
+matrixSolutionVector <- c(-3,5,10)
+  
+solveWithElimination(matrixRow1, matrixRow2, matrixRow3, matrixSolutionVector)
+```
+
+Looks good to me, so now with homework values:
+
+```{r}
+matrixRow1 <- c(1,1,3)
+matrixRow2 <- c(2,-1,5)
+matrixRow3 <- c(-1,-2,4)
+matrixSolutionVector <- c(1,2,6)
+  
+solveWithElimination(matrixRow1, matrixRow2, matrixRow3, matrixSolutionVector)
+```

@@ -1,0 +1,78 @@
+---
+title: "IS 605 - Assignment 8"
+author: "Dan Fanelli"
+date: "March 22, 2016"
+output: pdf_document
+---
+
+## Problem Set 1:
+
+Your colleague either commutes by train or by the bus. 20 days of the month,
+she takes the train and the remaining 10 days she takes the bus. If she takes the train, she reaches work on time with a probability of 0.9. If she takes the bus, she frequently gets stuck in traffic and reaches work on time with a probability of 0.5. Given that she was on time today, what is the probability that she took the bus to work today?
+
+```{r warning=FALSE}
+prob_train <- (20/30)
+prob_bus <- (10/30)
+prob_ontime_given_bus <- 0.5
+prob_ontime_given_train <- 0.9
+
+prob_bus_given_on_time <- (prob_bus * prob_ontime_given_bus) / 
+  ((prob_bus * prob_ontime_given_bus) + (prob_train * prob_ontime_given_train))
+
+prob_bus_given_on_time
+
+cat('Given you were on time, ', prob_bus_given_on_time * 100, '% chance you took the bus.')
+```
+
+## Problem Set 2:
+
+In the Grade Network that we looked at in the notes, what happens to the probability of Difficulty of Course when you present the evidence that the received recommendation letter was good? 
+
+__Answer:__ The probabilities of difficulty of course should go up too - the same way we can derive the probabilities of the input based on the probabilities of the output, we can do the same for multiple node cause and effect graphs.
+
+In addition, now present the evidence that both SAT scores were good and the letter of recommendation was good, What is the probability of the Difficulty of Course now? You should use the gRain package in R to build your network and perform these calculations.
+
+You may need to install RBGL package from BioConductor in R to get gRain
+working. See http://www.bioconductor.org/packages/release/bioc/html/RBGL.html for instructions on RBGL.
+
+```{r warning=FALSE}
+library(gRain)
+
+noyes <- c("no", "yes")
+lowhi <- c("low", "high")
+
+difficulty.node <- cptable(~difficulty, values=c(0.3,0.7), levels=noyes)
+intelligence.node <- cptable(~intelligence, values=c(0.8, 0.2), levels=lowhi)
+grade.node <- cptable(~grade|difficulty:intelligence, 
+    values=c(0.6, 0.01, 0.8, 0.1, 0.4, 0.99, 0.2, 0.9), levels=lowhi)
+
+letter.node <- cptable(~letter|grade, values=c(0.9, 0.05, 0.1, 0.95), levels=lowhi)
+sat.node <- cptable(~sat|intelligence, values=c(0.9, 0.2, 0.1, 0.8), levels=lowhi)
+
+probs_list <- compileCPT(list(difficulty.node, intelligence.node, grade.node, letter.node, sat.node))
+
+probs_list$difficulty
+probs_list$grade
+probs_list$letter
+
+```
+
+### Checkpoint: 
+
+What happens to the probability of Difficulty of Course when you present the evidence that the received recommendation letter was good?
+
+We are now presented with the FACT that the reccomendation letter was good, so 1) confirm the base probability before the new evidence, 2) change the evidence, 3) requery the network:
+
+```{r warning=FALSE}
+net1 <- grain(probs_list)
+net1
+querygrain(net1, nodes=c("difficulty"))
+
+net2 <- setEvidence(net1, evidence=list(letter="high"))
+querygrain(net2, nodes=c("difficulty"))
+
+```
+
+### Conclusion:
+
+The probability of Course Being Difficult went from __70%__ to __77.1%__ upon knowing that the reccomendation letter was good.

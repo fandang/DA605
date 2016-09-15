@@ -1,0 +1,66 @@
+---
+title: "DA 605 - Assignment 2 - Problem Set 2"
+author: "Dan Fanelli"
+date: "February 11, 2016"
+output: html_document
+---
+
+# Assignment 2: Problem Set 2 
+
+### Write an R function to factorize a square matrix A into LU or LDU, whichever you prefer:
+
+```{r}
+factorizeSquareMatrixRecursive <- function(A,L,U,currentDiagonal){
+  if(nrow(U) > currentDiagonal){
+    size <- nrow(U)
+    topLeft <- U[currentDiagonal,currentDiagonal]
+    for(row in (currentDiagonal+1):size){
+      multiplier <- (U[row,currentDiagonal] / topLeft)
+      L[row,currentDiagonal] <- multiplier
+      U[row,] <- (U[currentDiagonal,] * multiplier * -1) + U[row,]
+    }  
+    U <- factorizeSquareMatrixRecursive(A,L,U,(currentDiagonal+1))
+  }else{
+    print("[A] = ")
+    write.table(round(A,2), sep = " ", row.names = FALSE, col.names = FALSE)
+    print("[L] = ")
+    write.table(round(L,2), sep = " ", row.names = FALSE, col.names = FALSE)
+    print("[U] = ")
+    write.table(round(U,2), sep = " ", row.names = FALSE, col.names = FALSE)
+    print("[A = LU] = ")
+    write.table((round(A,2) == round(L %*% U,2)), sep = " ", row.names = FALSE, col.names = FALSE)
+  }
+  return (U)
+}
+
+factorizeSquareMatrix <- function(numbers){
+  A <- matrix(numbers, nrow=sqrt(length(numbers)), ncol=sqrt(length(numbers)))  
+  L <- diag(sqrt(length(numbers)));
+  U <- A;
+  factorizeSquareMatrixRecursive(A,L,U,1)
+}
+
+```
+
+### Sample 1: A 2x2
+```{r}
+end <- factorizeSquareMatrix(c(2,6,1,8))
+```
+### Sample 2: A 3x3
+```{r}
+end <- factorizeSquareMatrix(c(3,5,1,4,2,6,7,9,8))
+```
+### Sample 3: A 4x4
+```{r}
+end <- factorizeSquareMatrix(c(3,5,1,4,2,6,7,9,8,5,5,5,5,6,7,9))
+```
+
+### Sample 4: A 3x3 with a couple fractions
+```{r}
+end <- factorizeSquareMatrix(c(2,3,7,(7/6),2,6,1,8,(5/3)))
+```
+
+### Sample 5: A 3x3 with lots of negative inputs
+```{r}
+end <- factorizeSquareMatrix(c(-3,5,-1,4,-2,-6,7,-9,-8))
+```

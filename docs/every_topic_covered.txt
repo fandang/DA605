@@ -1,0 +1,48 @@
+wk1mod1.pdf:
+MODULE 1: VECTORS AND MATRICES
+- vectors are direction and magnitude
+- scalar multiplication times vector
+- adding vectors == adding vector components
+- linear combinations of 2 vectors: (just another word for adding?)
+- dot (inner) product: v.w = v1w1 + v2w2 + ... + vnwn
+- v.w == v*w' (ie v dot w == v time w transpose)
+- vector length (or Euclidean norm): sqrt(v.v)
+- dot product of a vector gives length of vector squared
+- unit vector: a vector of length 1 unit
+- Angle between two vectors: The dot-product between two vectors is proportional to their lengths and to the angle between them. In particular, the cosine of the angle between them. If you have two unit vectors, then the dot-product between them is simply the cosine of the angle between them.
+- Orthogonal vectors: Two vectors are considered orthogonal if they are 90 degrees apart. In other words, their dot-product will be zero. This can be seen from trigonometry: cos(90) = 0.
+- OrthoNORMAL vectors: 2 unit vectors that are orthogonal
+- If you have a complete set of orthonormal vectors, you can defne any other vector in that space in terms of a linear combination of these orthonormal vectors
+- basis: a "complete" set of orthonormal vectors
+- "Complete" implies that there is one orthonormal vector representing each dimension of the space
+- m*n matrix = m rows, n cols. Think of it as N column vectors, or M row vectors
+- Matrix multiplied with a vector...
+- very important class of models such as linear support vector machines, neural networks, logistic regression all have matrices and vectors at their heart. Solving linear regression equations are at the very foundation of these machine learning techniques.
+
+wk1mod2.pdf
+MODULE 2: SOLVING LINEAR SYSTEM OF EQUATIONS
+- Linear Systems + Data Analytics: "likely purchases"
+	- data points: age, household income, past purchase history, postal code, etc.
+	- together these points are an N-dimensional vector
+	- m such visitors gives you an M x N matrix
+	- assume you have M-dim vector of 1s + 0s saying BUYER or NON-BUYER
+	- building model == finiding best M-dimensional vector x that minimizes the magnitude of Ax - b vector
+	- this is just a system of equations and a constraint to solve them
+	- the point where 2 lines meet is the SOLUTION
+- Linear Systems of Equations: 
+	- consider the equations as constraints on the variables. (Each equation imposes a constraint on a set of variables.)
+	- A system of equations imposes a collection of constraints that need to be solved together in order to nd a solution that ts.
+	- degenerate equations (get to it later) ... but each equations is a 'constraint'
+	- great for 2-D but it gets tricky to visualize planes or hyperplanes in higher dimensions
+- Linear Combinations of columns:
+	- matrix * vector == each vector item * column of matrix
+	- Both the column-picture representation and the row-picture are completely equivalent, though you might nd it easier to visualize the solution as a linear combination of column vectors rather than a point specifed by a set of intersecting hyper-planes.
+	- express as Ax = b where A is the coeffcient matrix and b is the set of constraints that are imposed on it.
+- Solving by Elimination
+	- Upper Triangular Form - can solve once you have that
+	- Procedure to get UT is called Pivot & Multiply
+
+wk2mod1.pdf
+BASIC MATRIX OPERATIONS AND PROPERTIES
+- Basic Matrix properties: TODO
+- 

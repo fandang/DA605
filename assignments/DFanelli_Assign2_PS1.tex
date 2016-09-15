@@ -1,0 +1,87 @@
+\documentclass{article}
+
+\title { DA 605 - Assignment 2 - Problem Set 1}
+\author { Dan Fanelli }
+
+\usepackage{Sweave}
+\begin{document}
+
+
+\maketitle
+
+(1) \textbf{Show that in general:
+\[A^{T}A \neq AA^{T}\]
+}
+
+Before showing in general, we'll show a simple counterexample:
+
+\begin{Schunk}
+\begin{Sinput}
+> matrixA <- matrix(c(0,1,2,0), nrow = 2, ncol = 2)
+> matrixA
+\end{Sinput}
+\begin{Soutput}
+     [,1] [,2]
+[1,]    0    2
+[2,]    1    0
+\end{Soutput}
+\begin{Sinput}
+> aTranspose <- t(matrixA)
+> aTranspose
+\end{Sinput}
+\begin{Soutput}
+     [,1] [,2]
+[1,]    0    1
+[2,]    2    0
+\end{Soutput}
+\begin{Sinput}
+> matrixA %*% aTranspose
+\end{Sinput}
+\begin{Soutput}
+     [,1] [,2]
+[1,]    4    0
+[2,]    0    1
+\end{Soutput}
+\begin{Sinput}
+> aTranspose %*% matrixA
+\end{Sinput}
+\begin{Soutput}
+     [,1] [,2]
+[1,]    1    0
+[2,]    0    4
+\end{Soutput}
+\end{Schunk}
+
+Now, we'll show in general (for two 2 x 2 matrices):
+
+\[A^{T} = \]
+
+\[ \left( \begin{array}{ccc}
+a & b \\
+c & d \end{array} \right)\] 
+
+and therefore \[A^{T} = \]
+
+\[ \left( \begin{array}{ccc}
+a & c \\
+b & d \end{array} \right)\] 
+
+\[A^{T}A = \]
+
+\[ \left( \begin{array}{ccc}
+a^2+b^2 & ac+bd \\
+ca+cd & c^2+d^2 \end{array} \right)\] 
+
+\[AA^{T} = \]
+
+\[ \left( \begin{array}{ccc}
+a^2+c^2 & ab+cd \\
+ab+cd & b^2+d^2 \end{array} \right)\] 
+which shows they are not equal. \\
+
+(2) \textbf{For a special type of square matrix A, we get \[AA^{T} == A^{T}A \]
+. Under what conditions could this be true? (Hint: The Identity matrix I is an example of such a matrix).} \\
+
+This is true whenever the matrices are symetric (As is the case with the identity matrix).
+
+\end{document}

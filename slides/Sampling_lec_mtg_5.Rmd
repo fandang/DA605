@@ -1,0 +1,206 @@
+---
+title: "Sampling from probability distributions"
+author: "Giri Iyengar"
+output:
+  beamer_presentation:
+    highlight: tango
+  slidy_presentation:
+    colortheme: beaver
+    fonttheme: professionalfonts
+    highlight: tango
+    theme: cerulean
+email: giyengar@gmail.com
+---
+
+## Sampling: When do we use it
+- We want to simulate a complex system and need to know what can happen as the system operates
+- Used in Economic forecasting, Financial modeling, Statistical Physics, Machine Learning
+- Markov Chain Monte Carlo (MCMC) technique is a well-used simulation tool (You might have encountered it in your 401(k) modeling)
+
+## Some popular sampling techniques
+- Inverse Transform Sampling
+- Rejection Sampling
+- Slice Sampling
+
+## Inverse Transform Sampling
+- Start with the CDF (cumulative distribution function)
+    + Integral of the PDF
+- Invert it
+- Uniformly sample a value from [0,1]. Interpret as a probability
+- Use the inverse to find the corresponding value of the random variable
+
+## Triangular PDF
+![Triangular PDF from Problem Set 1 in the assignment](inverseSampling/TriangularPDF.png)
+
+## Corresponding CDF for Triangular PDF
+![CDF for Triangular PDF](inverseSampling/TriangularCDF.png)
+
+## Inverse Sampling in Action
+![Inverse Sampling in Action](inverseSampling/invSampling.png)
+
+## Inverse Triangular PDF
+![Inverse Triangular PDF](inverseSampling/InvTriPDF.png)
+
+## CDF for Inverse Triangular PDF
+![CDF for Inverse Triangular PDF](inverseSampling/InvTriCDF.png)
+
+## Inverse Transform Sampling
+- Given $f(x) = x, x \in [0,1]$ and $f(x)=2-x,x \in (1,2]$
+- We get F(x), the CDF as 
+    + $F(x) = \frac{x^2}{2}, x \in [0,1]$ and $F(x) = 2x - \frac{x^2}{2} - 1, x \in (1,2]$
+- From this, we can compute an inverse function of F(x), $F^{-1}(x)$ such that $F^{-1}F(x) = x$
+- A little bit of Algebra shows that we get the inverse function of the CDF as
+    + $F^{-1}(y) = \sqrt{2y}, y \in [0,0.5]$ and $F^{-1}(y) = 2 - \sqrt{2(1-y)}, y \in(0.5,1]$.
+
+## Inverse Transform Sampling
+Now, to sample from this inverse CDF, we can do the following:
+```{r}
+invcdf <- function(y) {
+    if (y >= 0 && y <= 1) {
+        ret <- ifelse(y < 0.5,sqrt(2*y),2-sqrt(2*(1-y)))
+    }
+}
+
+sample1 <- sapply(runif(20000),invcdf)
+sdf = data.frame(sample1)
+```
+
+## Inverse Transform Sampling
+```{r,echo=FALSE}
+library(ggplot2)
+print(qplot(sample1,data=sdf,geom="density"))
+```
+
+## Rejection Sampling
+- Choose a function M(x) that is strictly larger than f(x) over the range 
+- Uniformly sample (x,y) over the range of x and y
+- Accept all samples that are under the curve of f(x) and reject all samples that are above f(x)
+
+## Rejection Sampling in Action
+![Rejection Sampling Figure](inverseSampling/RejSampling.png)
+
+
+## Rejection Sampling
+```{r}
+sample.x = runif(20000,0,2)
+accept = c()
+fx <- function(x) {if (x >= 0 && x <= 2) {y <- ifelse(x <=1, x, 2-x)} else {y <- 0}}
+
+# dnorm(sample.x[i],0.5,0.175)
+for(i in 1:length(sample.x)){
+ U = runif(1, 0, 1)
+ if(dunif(sample.x[i], 0, 2)*3*U <= fx(sample.x[i])) {
+   accept[i] = 'Y'
+ }
+ else if(dunif(sample.x[i], 0, 2)*3*U > fx(sample.x[i])) {
+  accept[i] = 'N'
+ }
+}
+
+T = data.frame(sample.x, accept = factor(accept, levels= c('Y','N')))
+```
+
+## Rejection Sampling
+We can plot the results along with the true distribution with the following code.
+```{r, echo=FALSE}
+hist(T[,1][T$accept=='Y'], breaks = seq(0,2,0.02), freq = FALSE, main = 'Histogram of X', xlab = 'X')
+x=seq(0,1,0.02)
+lines(x, fx(x))
+x=seq(1,2,0.02)
+lines(x, fx(x))
+```
+
+## Rejection Sampling
+```{r, echo=FALSE}
+print(qplot(sample.x, data = T, geom = 'density', color = accept))
+```
+
+## Rejection Sampling
+```{r, echo=FALSE}
+print(qplot(sample.x, data = T, geom = 'histogram', fill = accept, binwidth=0.02))
+```
+
+## Slice Sampling
+- First select an $\hat{x}$ from the range of f(x)
+- Then, vertically choose a $\hat{y}$ that is between 0 and $f(\hat{x})$
+- Draw a horizontal slice at this $\hat{y}$
+- Uniformly sample between $\hat{x}_{min}$ and $\hat{x}_{max}$ at this $\hat{y}$. 
+- Repeat with this as the new $\hat{x}$
+
+## Slice Sampling in Action
+![Slice Sampling Figure](inverseSampling/SliceSampling.png)
+
+## Slice Sampling in Action
+Extracted from the mcmc tutorial (part of the diversitree package)
+```{r}
+library(diversitree)
+make.mvn <- function(mean, vcv) {
+    logdet <- as.numeric(determinant(vcv, TRUE)$modulus)
+    tmp <- length(mean) * log(2 * pi) + logdet
+    vcv.i <- solve(vcv)
+
+    function(x) {
+        dx <- x - mean
+        -(tmp + rowSums((dx %*% vcv.i) * dx))/2
+    }
+}
+```
+
+## Slice Sampling in Action
+Our target distribution has mean 0, and a VCV with positive covariance between the two parameters.
+
+```{r}
+vcv <- matrix(c(1, 0.25, 0.25, 0.75), 2, 2)
+lik <- make.mvn(c(0, 0), vcv)
+```
+Sample 10,000 points from the distribution, starting at c(0, 0).
+
+```{r}
+set.seed(1)
+samples <- mcmc(lik, c(0, 0), 20000, 1, print.every = 10000)
+```
+
+## Slice Sampling in Action
+The marginal distribution of V1 (the first axis of the distribution) should be a normal distribution with mean 0 and variance 1:
+
+```{r, echo=FALSE}
+curve(dnorm, xlim = range(samples$X1), ylim = c(0, 0.5), col = "red")
+hist(samples$X1, 30, add = TRUE, freq = FALSE)
+```
+
+## Slice Sampling with Triangular PDF
+Try with Triangular PDF
+```{r}
+set.seed(1)
+lik <- function(x) { if (x >= 0 && x < 1) log(x) else log(2-x) }
+samples <- mcmc(lik, 0.0001, 20000, 1, lower=0.0001, upper=1.9999, print.every = 20000)
+```
+
+## Slice Sampling with Triangular PDF
+```{r,echo=FALSE}
+#curve(fx,from=0,to=1,add=T,xlim=c(0,2),col='red')
+curve(fx,from=0,to=2,add=T,xlim=c(0,2),col='red')
+hist(samples$par, 30, add=T, freq = FALSE)
+```
+
+## Using built-in R Sample function to do this without knowing any sampling
+If you don't want to know how to do these sampling yourself, you can always just use the samp function in R
+```{r}
+xgrid=seq(0,2,by=0.01)
+fxgrid <- sapply(xgrid,fx)
+nx <- sample(xgrid,10000,replace=TRUE,prob=fxgrid)
+```
+
+## Compare sampling from a function and sampling from a PDF
+```{r,echo=FALSE}
+par(mfrow=c(2,1))
+hist(fxgrid,30,freq=F)
+hist(nx,30,freq=F)
+```
+
+## R one liner
+```{r}
+par(mfrow=c(1,1))
+nx <- sample(seq(0,2,by=0.01),10000,replace=TRUE,prob=sapply(seq(0,2,by=0.01),function(x) { if (x > 0 && x <= 2) {    y <- ifelse(x <=1, x, 2-x)  } else {y <- 0 }}))
+hist(nx,30,freq=F)
+```

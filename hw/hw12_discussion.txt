@@ -1,3 +1,0 @@
-I did not see a great difference in the performance between the clustered and non-clustered.
-
-Both seemed to finish instantaneously.
